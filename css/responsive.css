@@ -1,0 +1,64 @@
+/* ============================================================
+   responsive.css — Desktop → Laptop → Tablet → Mobile (RTL)
+   ============================================================ */
+
+@media (max-width:1250px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .metric-grid{grid-template-columns:repeat(3,1fr)}
+  .dash-grid{grid-template-columns:1fr}
+  .analytics-grid{grid-template-columns:1fr}
+}
+
+@media (max-width:992px){
+  :root{--sidebar-w:0px}
+  .sidebar{transform:translateX(100%);width:280px;box-shadow:var(--shadow)}
+  body.drawer-open .sidebar{transform:none}
+  .main{margin-inline-start:0}
+  .hamburger{display:flex}
+  body.sidebar-mini .sidebar{width:280px}
+  body.sidebar-mini .logo-text,body.sidebar-mini .sb-section,
+  body.sidebar-mini .sb-link span,body.sidebar-mini .sb-count,
+  body.sidebar-mini .sidebar-foot .sys-label{display:initial}
+  body.sidebar-mini .sb-link{justify-content:flex-start;padding:9px 12px}
+  body.sidebar-mini .sb-badge{position:static}
+  .page-body{padding:20px 18px 50px}
+  .topbar{padding:0 16px}
+  .settings-layout{grid-template-columns:1fr}
+  .settings-nav{position:static;display:flex;overflow-x:auto;padding:6px}
+  .settings-nav button{white-space:nowrap;width:auto}
+  .builder-layout{grid-template-columns:1fr}
+  .palette{position:static;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+  .palette h4{grid-column:1/-1;margin:8px 0 0}
+  .pal-item{margin-bottom:0}
+  .health-strip{grid-template-columns:repeat(2,1fr)}
+}
+
+@media (max-width:768px){
+  .top-search{display:none}
+  .topbar-title h1{font-size:15px}
+  .breadcrumb{display:none}
+  .profile-chip .pc-info{display:none}
+  .form-row{grid-template-columns:1fr}
+  .camp-hero .ch-actions{margin-inline-start:0;width:100%}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:11px}
+  .metric-grid{grid-template-columns:repeat(2,1fr)}
+  .stat-card .sc-value{font-size:21px}
+  .kv-grid{grid-template-columns:1fr}
+  .modal{padding:19px}
+  .donut-wrap{flex-direction:column}
+  .camp-grid{grid-template-columns:1fr}
+  .builder-canvas{height:480px}
+  #toasts{inset-inline:14px;bottom:14px}
+  .toast{max-width:none}
+  .kpi-inline{gap:14px}
+}
+
+@media (max-width:480px){
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .health-strip{grid-template-columns:1fr 1fr}
+  .page-body{padding:16px 13px 46px}
+  h1{font-size:19px}
+  .card{padding:15px}
+  .modal-actions{flex-wrap:wrap}
+  .modal-actions .btn{flex:1}
+}
