@@ -1,0 +1,111 @@
+/* ============================================================
+   Social Command Center — main.css
+   Design Tokens · Reset · Typography · Utilities
+   Dark Mode: Premium Enterprise — Charcoal هادئ، ألوان Muted،
+   بلا Neon ولا Glow ملوّن. CSS3 خالص.
+   ============================================================ */
+
+:root{
+  /* Brand — Muted Indigo (Accent فقط) */
+  --brand:#7d83e0; --brand-2:#6f74c8;
+  --brand-soft:rgba(125,131,224,.10);
+  --grad:linear-gradient(135deg,#7d83e0,#6f74c8);
+
+  /* Semantic — Muted */
+  --green:#4f9d7e; --green-soft:rgba(79,157,126,.12);
+  --red:#c96a72;   --red-soft:rgba(201,106,114,.12);
+  --amber:#c9964a; --amber-soft:rgba(201,150,74,.13);
+  --cyan:#5f9aa8;  --cyan-soft:rgba(95,154,168,.12);
+  --purple:#9a8fc7;--purple-soft:rgba(154,143,199,.13);
+  --gray:#8a8f9c;  --gray-soft:rgba(138,143,156,.12);
+
+  /* Dark theme (default) — Deep Charcoal Enterprise */
+  --bg:#0d0e12;
+  --bg-2:#121318;
+  --panel:#16171d;
+  --panel-2:#1b1d24;
+  --panel-3:#21232b;
+  --line:#24262e;
+  --line-2:#2e313a;
+  --text:#e4e6eb;
+  --muted:#969ca8;
+  --muted-2:#6a6e79;
+  --shadow:0 16px 40px rgba(0,0,0,.45);
+  --shadow-sm:0 3px 12px rgba(0,0,0,.30);
+  --chart-grid:#1e2027;
+  --input-bg:#101116;
+  --scrollbar:#2b2e37;
+  color-scheme:dark;
+
+  --radius:14px; --radius-sm:10px; --radius-lg:20px;
+  --sidebar-w:252px; --sidebar-w-mini:72px; --topbar-h:64px;
+  --font:"Segoe UI","IBM Plex Sans Arabic","Noto Kufi Arabic",Tahoma,Arial,sans-serif;
+  --t-fast:.15s; --t-med:.28s;
+}
+
+[data-theme="light"]{
+  --brand:#5a63c8; --brand-2:#6f74c8;
+  --brand-soft:rgba(90,99,200,.10);
+  --grad:linear-gradient(135deg,#5a63c8,#6f74c8);
+  --bg:#f4f6fb; --bg-2:#eef1f7;
+  --panel:#ffffff; --panel-2:#f6f8fc; --panel-3:#eceff7;
+  --line:#e2e7f0; --line-2:#d3dae8;
+  --text:#1b2334; --muted:#5d6b85; --muted-2:#8a96ad;
+  --shadow:0 18px 45px rgba(30,42,80,.12);
+  --shadow-sm:0 4px 14px rgba(30,42,80,.08);
+  --chart-grid:#e6eaf3; --input-bg:#f7f9fd; --scrollbar:#c6cede;
+  color-scheme:light;
+}
+
+/* ---------- Reset ---------- */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.75;min-height:100vh;transition:background var(--t-med),color var(--t-med)}
+img,svg{display:block;max-width:100%}
+button{font-family:inherit;font-size:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+a{color:var(--brand);text-decoration:none}
+ul,ol{list-style:none}
+::selection{background:rgba(125,131,224,.3)}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--scrollbar);border-radius:8px;border:2px solid transparent;background-clip:content-box}
+
+/* ---------- Typography — تسلسل هرمي واضح ---------- */
+h1{font-size:21px;font-weight:750;letter-spacing:-.1px;line-height:1.35}
+h2{font-size:17px;font-weight:700;line-height:1.4}
+h3{font-size:15px;font-weight:700;line-height:1.45}
+h4{font-size:13.5px;font-weight:650}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.tiny{font-size:11.5px;letter-spacing:.1px}
+.num{font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:embed}
+.mono{font-family:"Cascadia Code",Consolas,monospace;font-size:12.5px;direction:ltr;unicode-bidi:embed}
+
+/* ---------- Utilities ---------- */
+.flex{display:flex;align-items:center;gap:10px}
+.flex-col{display:flex;flex-direction:column;gap:10px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.wrap{flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+.grid{display:grid;gap:16px}
+.mt-1{margin-top:8px}.mt-2{margin-top:16px}.mt-3{margin-top:24px}
+.mb-1{margin-bottom:8px}.mb-2{margin-bottom:16px}.mb-3{margin-bottom:24px}
+.hidden{display:none!important}
+.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.clickable{cursor:pointer}
+.text-green{color:var(--green)} .text-red{color:var(--red)} .text-amber{color:var(--amber)}
+.text-brand{color:var(--brand)} .text-cyan{color:var(--cyan)}
+
+@keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.page-enter{animation:pageIn .35s cubic-bezier(.22,.8,.3,1)}
+
+@keyframes shimmer{to{background-position:-200% 0}}
+.skeleton{background:linear-gradient(90deg,var(--panel) 25%,var(--panel-3) 50%,var(--panel) 75%);
+  background-size:200% 100%;animation:shimmer 1.3s infinite;border-radius:var(--radius-sm);min-height:16px}
+.skeleton-card{min-height:110px;border-radius:var(--radius)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>منشئ الأتمتة — مركز القيادة الاجتماعي</title>
+<link rel="stylesheet" href="../css/main.css">
+<link rel="stylesheet" href="../css/layout.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/pages.css">
+<link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body data-page="campaigns" data-title="منشئ الأتمتة" data-crumb="<a href='campaigns.html'>الحملات</a><span class='sep'>/</span><span>منشئ الأتمتة المرئي</span>">
+<template id="page-content">
+  <div class="builder-layout">
+    <aside class="palette" id="palette" aria-label="عناصر الأتمتة"></aside>
+    <div class="builder-canvas-wrap">
+      <div class="builder-toolbar">
+        <button class="btn btn-primary btn-sm" id="tb-save">حفظ سير الأتمتة</button>
+        <button class="btn btn-ghost btn-sm" id="tb-run">معاينة المسار</button>
+        <button class="btn btn-ghost btn-sm" id="tb-demo">تحميل مثال جاهز</button>
+        <span class="sep"></span>
+        <button class="btn btn-danger btn-sm" id="tb-clear">مسح اللوحة</button>
+        <div class="grow"></div>
+        <span class="tiny muted">اسحب العناصر إلى اللوحة · اسحب من النقطة اليمنى إلى اليسرى للربط · نقرة مزدوجة للتعديل · Delete للحذف</span>
+      </div>
+      <div class="builder-canvas" id="builder-canvas">
+        <svg id="wires" aria-hidden="true"></svg>
+        <div class="canvas-hint" id="canvas-hint">أضف محفّزًا (Trigger) ثم اربطه بشروط وإجراءات<br>لبناء سير أتمتة كامل — تُحفظ اللوحة تلقائيًا</div>
+      </div>
+    </div>
+  </div>
+</template>
+<div id="toasts"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="../js/supabase/config.js"></script>
+<script src="../js/supabase/client.js"></script>
+<script src="../js/supabase/auth.js"></script>
+<script src="../js/supabase/db.js"></script>
+<script src="../js/icons.js"></script>
+<script src="../js/state.js"></script>
+<script src="../js/charts.js"></script>
+<script src="../js/components.js"></script>
+<script src="../js/modals.js"></script>
+<script src="../js/app.js"></script>
+<script src="../js/builder.js"></script>
+</body>
+</html>

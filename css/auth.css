@@ -1,0 +1,15 @@
+/* auth.css — صفحات المصادقة */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:22px;
+  background:radial-gradient(800px 420px at 85% -10%,rgba(125,131,224,.08),transparent),var(--bg)}
+.auth-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-lg);
+  padding:34px;width:min(440px,100%);box-shadow:var(--shadow)}
+.auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.auth-logo .t1{font-weight:800;font-size:17px}
+.auth-logo .t2{font-size:12px;color:var(--muted)}
+.auth-msg{display:none;border-radius:10px;padding:11px 14px;font-size:13px;margin:14px 0;line-height:1.7}
+.auth-msg.err{background:var(--red-soft);color:var(--red);border:1px solid rgba(201,106,114,.3)}
+.auth-msg.ok{background:var(--green-soft);color:var(--green);border:1px solid rgba(79,157,126,.3)}
+.auth-alt{text-align:center;font-size:13px;color:var(--muted);margin-top:18px}
+.auth-check{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--muted);margin:14px 0;cursor:pointer}
+.auth-check input{width:16px;height:16px;accent-color:var(--brand)}
+.auth-back{display:block;text-align:center;margin-top:14px;font-size:12.5px}
