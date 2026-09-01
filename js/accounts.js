@@ -78,42 +78,8 @@
         }
       });
     };
-    window.openConnectAccount = () => {
-      const m = openModal({
-        title: 'ربط حساب جديد', sub: 'المصادقة عبر OAuth الرسمي فقط — لن نطلب كلمة مرورك أبدًا',
-        body: `
-          <div class="field"><label>المنصة <span class="req">*</span></label>
-            <div class="grid" style="grid-template-columns:1fr 1fr;gap:9px">
-              ${Object.entries(PLATFORMS).map(([k, p], i) => `
-                <label class="pal-item" style="cursor:pointer;margin:0"><input type="radio" name="plat" value="${k}" ${i === 0 ? 'checked' : ''} style="accent-color:var(--brand)">
-                <span class="platform-ic" style="background:${p.color}">${p.short}</span> ${p.name}</label>`).join('')}
-            </div></div>
-          <div class="field"><label>اسم الحساب / الصفحة <span class="req">*</span></label><input class="input" id="ca-name" placeholder="مثال: صفحة متجر الأناقة"></div>
-          <div class="form-row">
-            <div class="field"><label>المعرّف</label><input class="input mono" id="ca-handle" placeholder="@store"></div>
-            <div class="field"><label>النوع</label><select class="select" id="ca-type"><option value="page">صفحة</option><option value="business">حساب أعمال</option><option value="profile">شخصي</option><option value="group">مجموعة</option></select></div>
-          </div>
-          <div class="form-hint" style="background:var(--amber-soft);border-radius:10px;padding:10px 13px;color:var(--amber)">${icon('alert', 13)} تكامل Meta OAuth غير متصل بعد. سيُحفظ الحساب بحالة «يحتاج إعادة اتصال» حتى اكتمال الربط الرسمي.</div>`,
-        actions: `<button class="btn btn-primary" id="ca-go">${icon('link', 15)} حفظ الحساب</button><button class="btn btn-ghost" id="ca-cancel">إلغاء</button>`
-      });
-      m.el.querySelector('#ca-cancel').onclick = m.close;
-      m.el.querySelector('#ca-go').onclick = async () => {
-        const name = m.el.querySelector('#ca-name').value.trim();
-        if (!name) return toast('اسم الحساب مطلوب', { type: 'warn' });
-        const done = btnBusy(m.el.querySelector('#ca-go'), 'جارٍ الحفظ…');
-        try {
-          await DB.accounts.create({
-            name, platform: m.el.querySelector('[name=plat]:checked').value,
-            handle: m.el.querySelector('#ca-handle').value.trim() || null,
-            account_type: m.el.querySelector('#ca-type').value, status: 'reconnect',
-            permissions: { publish: false, readData: false, insights: false, comments: false, messages: false }
-          });
-          DB.audit('account_created', 'account', name);
-          m.close(); toast('حُفظ الحساب — أكمل الربط عند توفر OAuth', { type: 'ok' }); render();
-        } catch (e) { toast(e.message, { type: 'err' }); }
-        done();
-      };
-    };
+    /* نافذة «ربط حساب جديد» المبسّطة تعيش الآن في js/meta-connect.js (OAuth حقيقي، بلا حقول يدوية).
+     تُحمَّل بعد هذا الملف في accounts.html فتتجاوز أي تعريف سابق. */
     render();
   }
 
