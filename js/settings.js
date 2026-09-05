@@ -1,9 +1,9 @@
 'use strict';
 /* settings.js — إعدادات حقيقية: الملف/مساحة العمل/الفريق تحفظ في Supabase */
 (async function () {
+  await new Promise(r => document.addEventListener('scc:ready', r, { once: true }));
   const root = document.getElementById('settings-root');
   if (!root) return;
-  await new Promise(r => document.addEventListener('scc:ready', r, { once: true }));
   let panel = location.hash.replace('#', '') || 'profile';
   let team = [], plan = null, accs = [], camps = [];
   try { [team, plan, accs, camps] = await Promise.all([DB.settings.team(), DB.settings.plan().catch(() => null), DB.accounts.list(), DB.campaigns.list()]); } catch (e) { toast(e.message, { type: 'err' }); }
