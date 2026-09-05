@@ -1,9 +1,9 @@
 'use strict';
 /* operations.js — سجل العمليات من جدول jobs الحقيقي + Realtime */
 (async function () {
+  await new Promise(r => document.addEventListener('scc:ready', r, { once: true }));
   const root = document.getElementById('operations-root');
   if (!root) return;
-  await new Promise(r => document.addEventListener('scc:ready', r, { once: true }));
   let status = '', campId = '', page = 1, camps = [];
 
   async function render() {
