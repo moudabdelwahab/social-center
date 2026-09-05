@@ -1,9 +1,9 @@
 'use strict';
 /* notifications.js — مركز الإشعارات من قاعدة البيانات + Realtime */
 (async function () {
+  await new Promise(r => document.addEventListener('scc:ready', r, { once: true }));
   const root = document.getElementById('notifications-root');
   if (!root) return;
-  await new Promise(r => document.addEventListener('scc:ready', r, { once: true }));
   let filter = 'all';
   const ICONS = {
     campaign_started: ['rocket', 'sc-brand'], campaign_completed: ['check-circle', 'sc-green'],
