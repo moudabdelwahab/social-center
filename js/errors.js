@@ -1,9 +1,9 @@
 'use strict';
 /* errors.js — مركز الأخطاء من قاعدة البيانات */
 (async function () {
+  await new Promise(r => document.addEventListener('scc:ready', r, { once: true }));
   const root = document.getElementById('errors-root');
   if (!root) return;
-  await new Promise(r => document.addEventListener('scc:ready', r, { once: true }));
   let cat = '', showResolved = false;
 
   async function render() {
