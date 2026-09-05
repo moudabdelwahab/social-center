@@ -1,9 +1,9 @@
 'use strict';
 /* analytics.js — تحليلات من analytics_daily الحقيقية — لا أرقام وهمية */
 (async function () {
+  await new Promise(r => document.addEventListener('scc:ready', r, { once: true }));
   const root = document.getElementById('analytics-root');
   if (!root) return;
-  await new Promise(r => document.addEventListener('scc:ready', r, { once: true }));
   let days = 30;
 
   async function render() {
