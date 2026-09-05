@@ -1,9 +1,9 @@
 'use strict';
 /* content.js — مكتبة المحتوى من Supabase: إنشاء/تعديل/نسخ/جدولة/نشر */
 (async function () {
+  await new Promise(r => document.addEventListener('scc:ready', r, { once: true }));
   const root = document.getElementById('content-root');
   if (!root) return;
-  await new Promise(r => document.addEventListener('scc:ready', r, { once: true }));
   let status = '', qv = '', cache = [], camps = [], accs = [];
 
   async function render() {
