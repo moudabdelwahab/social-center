@@ -1,9 +1,9 @@
 'use strict';
 /* groups.js — المجموعات من Supabase */
 (async function () {
+  await new Promise(r => document.addEventListener('scc:ready', r, { once: true }));
   const root = document.getElementById('groups-root');
   if (!root) return;
-  await new Promise(r => document.addEventListener('scc:ready', r, { once: true }));
   let cache = [], allAccounts = [];
 
   async function render() {
