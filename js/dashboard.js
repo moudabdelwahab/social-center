@@ -1,10 +1,10 @@
 'use strict';
 /* dashboard.js — لوحة التحكم: كل الأرقام من Supabase، بدون بيانات وهمية */
 (async function () {
+  await new Promise(r => document.addEventListener('scc:ready', r, { once: true }));
   const root = document.getElementById('dash-root');
   if (!root) return;
   root.innerHTML = '<div class="stats-grid">' + '<div class="skeleton skeleton-card"></div>'.repeat(8) + '</div>';
-  await new Promise(r => document.addEventListener('scc:ready', r, { once: true }));
 
   const [accs, camps, jobs, posts, notifs, series] = await Promise.all([
     DB.accounts.list(), DB.campaigns.list(), DB.jobs.list(), DB.posts.list(),
