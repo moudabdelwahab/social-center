@@ -1,9 +1,9 @@
 'use strict';
 /* builder.js — منشئ الأتمتة: العقد والروابط تحفظ في جدول automations بـSupabase */
 (async function () {
+  await new Promise(r => document.addEventListener('scc:ready', r, { once: true }));
   const canvas = document.getElementById('builder-canvas');
   if (!canvas) return;
-  await new Promise(r => document.addEventListener('scc:ready', r, { once: true }));
   const wires = document.getElementById('wires');
   const hint = document.getElementById('canvas-hint');
 
