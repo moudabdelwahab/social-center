@@ -5,16 +5,18 @@
   const root = document.getElementById('notifications-root');
   if (!root) return;
   let filter = 'all';
-  const ICONS = {
-    campaign_started: ['rocket', 'sc-brand'], campaign_completed: ['check-circle', 'sc-green'],
-    job_failed: ['alert', 'sc-red'], account_connected: ['link', 'sc-green'],
-    account_disconnected: ['unlink', 'sc-red'], token_expiring: ['key', 'sc-amber'],
-    post_scheduled: ['calendar', 'sc-purple'], report_ready: ['chart', 'sc-brand']
-  };
   async function render() {
     root.innerHTML = '<div class="skeleton" style="min-height:280px"></div>';
     let rows;
-    try { rows = await DB.notifications.list(); } catch (e) { toast(e.message, { type: 'err' }); return; }
+    try {
+      rows = await DB.notifications.list();
+    } catch (e) {
+      // لا نترك الهيكل العظمي معلّقًا — نعرض خطأ صريحًا وزر إعادة محاولة
+      toast(e.message, { type: 'err' });
+      root.innerHTML = `<div class="card">${emptyState('alert', 'تعذّر تحميل الإشعارات', e.message || 'حدث خطأ غير متوقع',
+        '<button class="btn btn-primary" onclick="notifReload()">إعادة المحاولة</button>')}</div>`;
+      return;
+    }
     const unread = rows.filter(n => !n.read_at).length;
     const shown = filter === 'unread' ? rows.filter(n => !n.read_at) : rows;
     root.innerHTML = `
@@ -28,7 +30,7 @@
       </div>
       <div class="card" style="padding:4px 0">
         ${shown.map(n => {
-          const [ic, tone] = ICONS[n.type] || ['bell', 'sc-brand'];
+          const [ic, tone] = notifIcon(n.type);
           return `<div class="list-row clickable" style="${n.read_at ? 'opacity:.55' : ''}" onclick="markRead(${n.id},this)">
             <div class="lr-ico ${tone}">${icon(ic, 16)}</div>
             <div class="grow"><div class="lr-title">${esc(n.title)}</div>${n.body ? `<div class="lr-sub">${esc(n.body)}</div>` : ''}</div>
@@ -39,6 +41,7 @@
       <div class="form-hint mt-2">${icon('info', 12)} الإشعارات الجديدة تظهر لحظيًا عبر Realtime. قنوات البريد وواتساب وPush تُفعَّل من الإعدادات مستقبلًا.</div>`;
   }
   window.notifFilter = (v) => { filter = v; render(); };
+  window.notifReload = () => render();
   window.markRead = async (id, el) => {
     try { await DB.notifications.markRead(id); el.style.opacity = '.55'; el.querySelector('.unread-dot')?.remove(); } catch {}
   };

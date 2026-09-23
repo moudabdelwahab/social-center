@@ -65,7 +65,21 @@
           <div class="search-results" id="search-results" role="listbox"></div>
         </div>
         <button class="icon-btn" id="theme-toggle" aria-label="تبديل المظهر">${icon(uiPrefs.theme === 'light' ? 'moon' : 'sun', 17)}</button>
-        <a class="icon-btn" href="notifications.html" aria-label="الإشعارات">${icon('bell', 17)}<span class="dot-badge num ${unread ? '' : 'hidden'}" id="top-notif-badge">${unread || ''}</span></a>
+        <div class="dropdown notif-dd">
+          <button class="icon-btn" id="notif-btn" aria-haspopup="true" aria-expanded="false" aria-label="الإشعارات">
+            ${icon('bell', 17)}<span class="dot-badge num ${unread ? '' : 'hidden'}" id="top-notif-badge">${unread || ''}</span>
+          </button>
+          <div class="dropdown-menu notif-menu" id="notif-menu" role="dialog" aria-label="الإشعارات">
+            <div class="nm-head">
+              <span class="nm-title">الإشعارات</span>
+              <span class="nm-unread num ${unread ? '' : 'hidden'}" id="nm-unread">${unread || ''}</span>
+              <div class="grow"></div>
+              <button class="btn btn-ghost btn-xs" id="nm-read-all">${icon('check', 12)} تحديد الكل كمقروء</button>
+            </div>
+            <div class="nm-list" id="nm-list"><div class="skeleton" style="min-height:120px;margin:10px"></div></div>
+            <a class="nm-foot" href="notifications.html">عرض الكل ${icon('external', 13)}</a>
+          </div>
+        </div>
         <div class="dropdown">
           <button class="profile-chip" id="profile-btn" aria-haspopup="true" aria-expanded="false">
             <div class="avatar" style="background:${esc(S.profile?.avatar_color || '#7d83e0')}">${esc((S.profile?.full_name || '؟')[0])}</div>
@@ -136,13 +150,97 @@
   });
   document.addEventListener('click', (e) => { if (!sBox.contains(e.target) && e.target !== sInput) sBox.classList.remove('open'); });
 
-  /* Realtime: إشعار جديد ← Toast + تحديث الشارة */
+  /* ---------- نافذة الجرس المنبثقة ---------- */
+  const nBtn = shell.querySelector('#notif-btn');
+  const nMenu = shell.querySelector('#notif-menu');
+  const nList = shell.querySelector('#nm-list');
+  let notifCache = [];
+
+  const setBadge = (n) => {
+    for (const el of [shell.querySelector('#top-notif-badge'), shell.querySelector('#nm-unread')]) {
+      if (!el) continue;
+      el.textContent = n || '';
+      el.classList.toggle('hidden', !n);
+    }
+    const sb = shell.querySelector('[data-badge="notifications"]');
+    if (sb) { sb.textContent = n || ''; sb.classList.toggle('hidden', !n); }
+  };
+
+  function paintNotifs() {
+    const top = notifCache.slice(0, 8);
+    nList.innerHTML = top.map(n => {
+      const [ic, tone] = notifIcon(n.type);
+      return `<button class="nm-item${n.read_at ? ' is-read' : ''}" data-id="${n.id}">
+        <span class="lr-ico ${tone}">${icon(ic, 15)}</span>
+        <span class="nm-body">
+          <span class="nm-t">${esc(n.title)}</span>
+          ${n.body ? `<span class="nm-b">${esc(n.body)}</span>` : ''}
+          <span class="nm-time">${timeAgo(n.created_at)}</span>
+        </span>
+        ${n.read_at ? '' : '<span class="unread-dot"></span>'}
+      </button>`;
+    }).join('') || `<div class="nm-empty">${icon('bell', 22)}<div>لا إشعارات بعد</div>
+        <div class="tiny muted">ستصلك هنا تنبيهات الحملات والحسابات والأخطاء</div></div>`;
+
+    nList.querySelectorAll('.nm-item').forEach(el => {
+      el.onclick = async () => {
+        const id = Number(el.dataset.id);
+        const n = notifCache.find(x => x.id === id);
+        if (n && !n.read_at) {
+          n.read_at = new Date().toISOString();
+          el.classList.add('is-read');
+          el.querySelector('.unread-dot')?.remove();
+          setBadge(notifCache.filter(x => !x.read_at).length);
+          try { await DB.notifications.markRead(id); } catch {}
+        }
+      };
+    });
+  }
+
+  async function loadNotifs() {
+    try {
+      notifCache = await DB.notifications.list();
+      setBadge(notifCache.filter(n => !n.read_at).length);
+      paintNotifs();
+    } catch (e) {
+      nList.innerHTML = `<div class="nm-empty">${icon('alert', 22)}<div>تعذّر تحميل الإشعارات</div>
+        <div class="tiny muted">${esc(e.message || '')}</div></div>`;
+    }
+  }
+
+  nBtn.onclick = (e) => {
+    e.stopPropagation();
+    const open = nMenu.classList.toggle('open');
+    nBtn.setAttribute('aria-expanded', String(open));
+    pMenu.classList.remove('open');
+    if (open) loadNotifs();
+  };
+  document.addEventListener('click', (e) => {
+    if (!nMenu.contains(e.target) && e.target !== nBtn) {
+      nMenu.classList.remove('open'); nBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { nMenu.classList.remove('open'); nBtn.setAttribute('aria-expanded', 'false'); }
+  });
+  shell.querySelector('#nm-read-all').onclick = async (e) => {
+    e.stopPropagation();
+    try {
+      await DB.notifications.markAllRead();
+      const now = new Date().toISOString();
+      notifCache.forEach(n => { n.read_at = n.read_at || now; });
+      setBadge(0); paintNotifs();
+    } catch (err) { toast(err.message, { type: 'err' }); }
+  };
+
+  /* Realtime: إشعار جديد ← Toast + تحديث الشارة والنافذة */
   DB.subscribe('notifications', async (payload) => {
     if (payload.eventType === 'INSERT') {
       const n = payload.new;
       toast(n.title, { body: n.body || '', type: n.type?.includes('fail') || n.type?.includes('error') ? 'err' : 'info' });
-      const b = document.getElementById('top-notif-badge');
-      if (b) { b.textContent = (parseInt(b.textContent) || 0) + 1; b.classList.remove('hidden'); }
+      notifCache = [n, ...notifCache.filter(x => x.id !== n.id)];
+      setBadge(notifCache.filter(x => !x.read_at).length);
+      if (nMenu.classList.contains('open')) paintNotifs();
     }
   });
 
