@@ -12,11 +12,15 @@
   if (meta) {
     const reason = qp.get('reason');
     const msgs = {
-      connected: {
-        t: 'تم ربط حساب Meta بنجاح',
-        b: `اكتشف النظام ${qp.get('assets') || 0} أصلًا · اشتراك Webhook: ${qp.get('webhook') || '—'} · حسابات إعلانية: ${qp.get('ads') || 0}`,
-        k: 'ok'
-      },
+      connected: (() => {
+        const assets = Number(qp.get('assets') || 0);
+        const pagesN = Number(qp.get('pages') || 0);
+        const body = `اكتشف النظام ${assets} أصلًا · اشتراك Webhook: ${qp.get('webhook') || '—'} · حسابات إعلانية: ${qp.get('ads') || 0}`;
+        // لا صفحات = المستخدم ليس مشرفًا على أي صفحة، أو لم يخترها في نافذة Meta
+        return pagesN === 0
+          ? { t: 'تم ربط حساب Meta — بلا صفحات', b: body + ' · لم نعثر على صفحات فيسبوك تديرها: تأكد من اختيار صفحاتك في نافذة Meta، أو أنك مشرف عليها', k: 'warn' }
+          : { t: 'تم ربط حساب Meta بنجاح', b: body, k: 'ok' };
+      })(),
       cancelled: { t: 'ألغيتَ الربط من نافذة Meta', b: 'لم يتغير شيء — يمكنك إعادة المحاولة في أي وقت', k: 'info' },
       error: {
         t: 'تعذّر إكمال الربط مع Meta',
@@ -25,7 +29,10 @@
           missing_params: 'وصلت استجابة ناقصة من Meta — أعد المحاولة',
           token_invalid: 'رمز Meta غير صالح — أعد الربط',
           denied_permissions: 'رفضتَ صلاحيات مطلوبة — امنح الصلاحيات لإكمال الربط',
-          exchange_failed: 'تعذّر التحقق من الربط مع Meta — حاول مجددًا',
+          exchange_failed: 'تعذّر تبديل رمز التفويض مع Meta — حاول مجددًا',
+          graph_failed: 'تعذّر قراءة بياناتك من Meta — حاول مجددًا',
+          config: 'إعدادات تطبيق Meta ناقصة على الخادم — تواصل مع الدعم',
+          internal: 'خطأ غير متوقع أثناء إكمال الربط — حاول مجددًا',
           db: 'حدث خطأ أثناء الحفظ — حاول مجددًا'
         })[reason] || 'حدث خطأ غير متوقع — حاول مجددًا',
         k: 'err'
