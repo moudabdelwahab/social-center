@@ -31,6 +31,7 @@
   .palette h4{grid-column:1/-1;margin:8px 0 0}
   .pal-item{margin-bottom:0}
   .health-strip{grid-template-columns:repeat(2,1fr)}
+  .plat-strip{grid-template-columns:repeat(3,1fr)}
 }
 
 @media (max-width:768px){
@@ -56,6 +57,9 @@
 @media (max-width:480px){
   .stats-grid{grid-template-columns:1fr 1fr}
   .health-strip{grid-template-columns:1fr 1fr}
+  .plat-strip{grid-template-columns:1fr 1fr}
+  .filters-bar .acc-f{flex:1 1 140px;max-width:none}
+  .bulk-bar{position:sticky;bottom:0;z-index:5}
   .page-body{padding:16px 13px 46px}
   h1{font-size:19px}
   .card{padding:15px}

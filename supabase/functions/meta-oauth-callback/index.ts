@@ -175,7 +175,7 @@ Deno.serve(async (req: Request) => {
     // 5) الصفحات (ترقيم كامل) + إنستغرام الأعمال المرتبط بكل صفحة
     const pages: Record<string, unknown>[] = [];
     let next: string | null = `${GRAPH}/me/accounts?${new URLSearchParams({
-      fields: 'id,name,access_token,tasks,followers_count,username,instagram_business_account{id,username,name}',
+      fields: 'id,name,access_token,tasks,followers_count,username,instagram_business_account{id,username,name,profile_picture_url}',
       limit: '100', access_token: userToken,
     })}`;
     while (next) {
@@ -190,8 +190,15 @@ Deno.serve(async (req: Request) => {
         pages.push({
           id: p.id, name: p.name, access_token: p.access_token,
           tasks: p.tasks ?? [], followers: p.followers_count ?? 0, username: p.username ?? null,
+          // رابط صورة عام وثابت لا ينتهي (عكس روابط CDN المؤقتة في picture.url)
+          avatar_url: `${GRAPH}/${p.id}/picture?type=square&width=160&height=160`,
           instagram: p.instagram_business_account
-            ? { id: p.instagram_business_account.id, username: p.instagram_business_account.username ?? null, name: p.instagram_business_account.name ?? null }
+            ? {
+                id: p.instagram_business_account.id,
+                username: p.instagram_business_account.username ?? null,
+                name: p.instagram_business_account.name ?? null,
+                avatar_url: p.instagram_business_account.profile_picture_url ?? null,
+              }
             : null,
         });
       }
@@ -264,16 +271,18 @@ Deno.serve(async (req: Request) => {
         workspace_id: st.workspace_id, platform: 'meta', external_id: String(p.id),
         name: String(p.name ?? 'صفحة'), handle: p.username ? `@${p.username}` : null,
         account_type: 'page', status: 'connected', followers: Number(p.followers) || 0,
+        avatar_url: (p.avatar_url as string) ?? null,
         permissions: tasksToPerms((p.tasks as string[]) ?? []),
         last_sync_at: new Date().toISOString(),
       }, 'page');
 
-      const ig = p.instagram as { id: string; username: string | null; name: string | null } | null;
+      const ig = p.instagram as { id: string; username: string | null; name: string | null; avatar_url: string | null } | null;
       if (ig?.id) {
         await upsertAsset({
           workspace_id: st.workspace_id, platform: 'instagram', external_id: String(ig.id),
           name: ig.name || ig.username || 'حساب إنستغرام', handle: ig.username ? `@${ig.username}` : null,
           account_type: 'business', status: 'connected',
+          avatar_url: ig.avatar_url ?? null,
           permissions: { publish: grantedScopes.includes('instagram_content_publish'), readData: true, insights: grantedScopes.includes('read_insights'), comments: true, messages: false },
           last_sync_at: new Date().toISOString(),
         }, 'instagram');
@@ -284,7 +293,7 @@ Deno.serve(async (req: Request) => {
       await upsertAsset({
         workspace_id: st.workspace_id, platform: 'meta', external_id: String(a.id),
         name: `إعلانات: ${String(a.name ?? a.id)}`, handle: null,
-        account_type: 'business', status: 'connected',
+        account_type: 'ad_account', status: 'connected',
         permissions: { publish: false, readData: true, insights: true, comments: false, messages: false },
         last_sync_at: new Date().toISOString(),
       }, 'adaccount');

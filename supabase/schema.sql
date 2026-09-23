@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS social_accounts (
   platform text NOT NULL, name text NOT NULL, handle text, account_type text DEFAULT 'page',
   status text NOT NULL DEFAULT 'reconnect' CHECK (status IN ('connected','reconnect','error','paused')),
   followers int DEFAULT 0, permissions jsonb DEFAULT '{}',
-  external_id text, access_token_enc text, token_expires_at timestamptz,
+  external_id text, avatar_url text, access_token_enc text, token_expires_at timestamptz,
   last_sync_at timestamptz, created_at timestamptz DEFAULT now(), deleted_at timestamptz
 );
 
@@ -113,6 +113,10 @@ CREATE TABLE IF NOT EXISTS notifications (
   read_at timestamptz, created_at timestamptz DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_notif_ws ON notifications(workspace_id, created_at DESC);
+-- فهرس فريد غير جزئي: PostgREST يُصدر ON CONFLICT (cols) بلا WHERE،
+-- ولا يستطيع Postgres استدلال فهرس جزئي بها (خطأ 42P10).
+CREATE UNIQUE INDEX IF NOT EXISTS uq_social_accounts_external
+  ON social_accounts(workspace_id, platform, external_id);
 
 CREATE TABLE IF NOT EXISTS errors (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -210,9 +214,17 @@ CREATE POLICY p_wm_read ON workspace_members FOR SELECT USING (public.is_member(
 CREATE POLICY p_wm_ins ON workspace_members FOR INSERT WITH CHECK (user_id = auth.uid() OR public.can_admin(workspace_id));
 CREATE POLICY p_wm_upd ON workspace_members FOR UPDATE USING (public.can_admin(workspace_id));
 CREATE POLICY p_wm_del ON workspace_members FOR DELETE USING (public.can_admin(workspace_id) AND role <> 'owner');
-CREATE POLICY p_acc_sel ON social_accounts FOR SELECT USING (public.is_member(workspace_id) AND deleted_at IS NULL);
+-- المشرفون فأعلى يرون الصفوف المحذوفة ناعمًا أيضًا: الحذف الناعم
+-- UPDATE، وPostgres يطبّق سياسات SELECT على الصف بعد التحديث.
+CREATE POLICY p_acc_sel ON social_accounts FOR SELECT USING (
+  public.is_member(workspace_id) AND (deleted_at IS NULL OR public.can_manage(workspace_id)));
 CREATE POLICY p_acc_ins ON social_accounts FOR INSERT WITH CHECK (public.can_manage(workspace_id));
-CREATE POLICY p_acc_upd ON social_accounts FOR UPDATE USING (public.can_manage(workspace_id));
+-- التحديث للمشرفين فأعلى، لكن لا يصير الصف محذوفًا ناعمًا (فصل حساب)
+-- إلا بيد admin فأعلى — الإنفاذ في القاعدة لا في الواجهة.
+CREATE POLICY p_acc_upd ON social_accounts FOR UPDATE
+  USING (public.can_manage(workspace_id))
+  WITH CHECK (public.can_manage(workspace_id)
+              AND (deleted_at IS NULL OR public.can_admin(workspace_id)));
 CREATE POLICY p_acc_del ON social_accounts FOR DELETE USING (public.can_admin(workspace_id));
 CREATE POLICY p_grp_all ON account_groups FOR ALL USING (public.is_member(workspace_id)) WITH CHECK (public.can_manage(workspace_id));
 CREATE POLICY p_agm_sel ON account_group_members FOR SELECT USING (

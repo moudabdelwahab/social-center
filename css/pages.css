@@ -37,6 +37,46 @@
 .filters-bar .search-inline svg{position:absolute;inset-inline-start:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--muted)}
 .filters-bar .search-inline .input{padding-inline-start:36px}
 
+/* ---------- بطاقات المنصات (شريط الإحصاء العلوي) ---------- */
+.plat-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+.plat-card{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--panel);
+  border:1px solid var(--line);border-radius:14px;cursor:pointer;text-align:start;
+  transition:border-color var(--t-fast),background var(--t-fast)}
+.plat-card:hover{border-color:var(--brand)}
+.plat-card.is-active{border-color:var(--brand);background:var(--brand-soft)}
+.plat-card .pc-ic{width:38px;height:38px;border-radius:12px;font-size:13px}
+.plat-card .pc-ic svg{width:16px;height:16px}
+.plat-card .pc-body{display:flex;flex-direction:column;gap:2px;min-width:0}
+.plat-card .pc-n{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.plat-card .pc-l{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* حقول الفلترة/الفرز: عرض ذاتي حتى يبقى الشريط في سطر واحد */
+.filters-bar .acc-f{width:auto;flex:0 0 auto;max-width:190px}
+
+/* ---------- شريط الإجراءات الجماعية ---------- */
+.bulk-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;
+  padding:11px 14px;border-radius:12px;background:var(--brand-soft);border:1px solid var(--brand)}
+.bulk-bar .bulk-n{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:650;color:var(--brand)}
+.bulk-bar .bulk-n svg{width:15px;height:15px}
+
+/* ---------- جدول الحسابات ---------- */
+.tbl-acc .col-check{width:40px;text-align:center;padding-inline:10px}
+.tbl-acc tbody tr.is-sel{background:var(--brand-soft)}
+.th-sort{display:inline-flex;align-items:center;gap:5px;background:none;border:0;padding:0;cursor:pointer;
+  font:inherit;color:inherit;font-weight:inherit}
+.th-sort:hover{color:var(--brand)}
+.th-sort.is-on{color:var(--brand)}
+.th-sort .th-ar{font-size:9px;line-height:1}
+
+/* ---------- تذييل الجدول: النطاق + عدد لكل صفحة + الترقيم ---------- */
+.tbl-foot{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
+.tbl-foot .select-xs{padding:4px 8px;font-size:12px;width:auto;min-width:64px}
+.tbl-foot .flex{display:inline-flex;align-items:center}
+
+/* ---------- صورة الحساب الحقيقية ---------- */
+.acc-avatar{position:relative;overflow:hidden}
+.acc-avatar .av-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+
 /* نافذة «ربط حساب جديد» المبسّطة (OAuth) */
 .connect-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .connect-card{background:var(--panel-2);border:1px solid var(--line);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:11px;transition:border var(--t-fast)}
