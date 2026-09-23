@@ -18,9 +18,19 @@ function platformChip(code) {
   return `<span class="platform-ic" style="background:${p.color}" title="${p.name}">${p.short}</span><span class="small muted">${p.name}</span>`;
 }
 
+/* لون ثابت مشتق من المعرّف — المعرّفات UUID نصية، والقسمة عليها كانت تنتج NaN */
+function avHash(s) { s = String(s || ''); let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; }
+
+/* صورة الحساب الحقيقية إن توفرت (avatar_url)، وإلا الحرف الأول.
+   الصورة طبقة فوق الحرف: إن فشل تحميلها تُزال ويظهر الحرف تلقائيًا. */
 function accAvatar(a, size = 38) {
-  const color = AV_COLORS[a.id % AV_COLORS.length];
-  return `<div class="acc-avatar" style="background:${color};width:${size}px;height:${size}px;font-size:${Math.round(size * 0.38)}px" aria-hidden="true">${esc((a.name || '؟')[0])}</div>`;
+  const color = AV_COLORS[avHash(a.id) % AV_COLORS.length];
+  const letter = esc((String(a.name || '؟').trim()[0]) || '؟');
+  const box = `width:${size}px;height:${size}px;font-size:${Math.round(size * 0.38)}px`;
+  const img = a.avatar_url
+    ? `<img class="av-img" src="${esc(a.avatar_url)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`
+    : '';
+  return `<div class="acc-avatar" style="background:${color};${box}" aria-hidden="true"><span>${letter}</span>${img}</div>`;
 }
 
 function accCell(a) {

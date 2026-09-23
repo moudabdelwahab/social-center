@@ -69,6 +69,26 @@ const PLATFORMS = {
 };
 const AV_COLORS = ['#7d83e0', '#8f7cc9', '#4f9d7e', '#c9964a', '#c96a72', '#5f9aa8', '#9a8fc7', '#6aa88f'];
 
+/* أنواع الأصول — مصدر واحد للترجمة في كل الصفحات */
+const ACC_TYPES = {
+  page: 'صفحة',
+  business: 'إنستغرام للأعمال',
+  ad_account: 'حساب إعلاني',
+  profile: 'شخصي',
+  group: 'مجموعة'
+};
+const accTypeName = (t) => ACC_TYPES[t] || t || '—';
+
+/* حقول الفرز المدعومة في صفحة الحسابات */
+const ACC_SORTS = {
+  name:         { t: 'اسم الحساب',   get: (a) => String(a.name || '') },
+  platform:     { t: 'المنصة',        get: (a) => String(PLATFORMS[a.platform]?.name || a.platform || '') },
+  status:       { t: 'الحالة',        get: (a) => String(ACC_STATUS[a.status]?.t || a.status || '') },
+  account_type: { t: 'النوع',         get: (a) => accTypeName(a.account_type) },
+  last_sync_at: { t: 'آخر مزامنة',    get: (a) => (a.last_sync_at ? Date.parse(a.last_sync_at) : 0) },
+  created_at:   { t: 'تاريخ الإضافة', get: (a) => (a.created_at ? Date.parse(a.created_at) : 0) }
+};
+
 /* حالة زر أثناء الحفظ — تمنع الضغط المزدوج */
 function btnBusy(btn, label = 'جارٍ الحفظ…') {
   const old = btn.innerHTML;
