@@ -13,7 +13,7 @@ const META_APP_SECRET = Deno.env.get('META_APP_SECRET') ?? '';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 const FRONTEND = Deno.env.get('FRONTEND_URL') ?? 'https://social.md3.in';
-const GRAPH = 'https://graph.facebook.com/v21.0';
+const GRAPH = 'https://graph.facebook.com/v26.0';
 const REDIRECT_URI = `${SUPABASE_URL}/functions/v1/meta-oauth-callback`;
 
 const SCOPES_LIST = ['pages_show_list', 'pages_manage_posts', 'pages_read_engagement', 'read_insights', 'instagram_basic', 'instagram_content_publish', 'ads_read'];
@@ -78,6 +78,91 @@ async function graphPage(stage: string, fullUrl: string) {
     throw metaError(stage, res.status, data);
   }
   return data;
+}
+
+/** تسجيل مرحلة تشخيصية آمنة — أرقام وأسماء فقط، بلا أي رمز */
+function logStage(stage: string, data: Record<string, unknown>) {
+  console.log('[oauth-callback] ' + stage + ' ' + JSON.stringify(data));
+}
+
+/** إخفاء وسط المعرّف: 8443…5218 */
+const maskId = (id: string) => (id.length > 8 ? `${id.slice(0, 4)}…${id.slice(-4)}` : id);
+
+/** الصلاحيات الممنوحة على مستوى صفحة بعينها */
+const PAGE_SCOPES = [
+  'pages_show_list', 'pages_manage_posts', 'pages_read_engagement',
+  'pages_manage_metadata', 'pages_manage_engagement', 'pages_messaging',
+  'pages_read_user_content',
+];
+
+/**
+ * اكتشاف الصفحات من granular_scopes.
+ *
+ * مع Facebook Login for Business تُمنح الصلاحيات لصفحات بعينها، و/me/accounts
+ * تُعيد {"data":[]} لأن المستخدم لا يحمل دورًا كلاسيكيًا على الصفحة. المصدر
+ * الموثوق لما وافق عليه المستخدم فعلًا هو granular_scopes[].target_ids داخل
+ * debug_token، ثم نقرأ كل صفحة بمعرّفها ونطلب رمزها.
+ *
+ * نستخدم App Access Token (app_id|app_secret) لا رمز المستخدم، لأن debug_token
+ * برمز المستخدم لا ينجح إلا لمطوّري التطبيق أنفسهم.
+ */
+async function pagesFromGranularScopes(userToken: string): Promise<Record<string, unknown>[]> {
+  let dbg;
+  try {
+    dbg = await graphGet('debug_token', '/debug_token', {
+      input_token: userToken,
+      access_token: `${META_APP_ID}|${META_APP_SECRET}`,
+    });
+  } catch { return []; }
+
+  const granular = (dbg?.data?.granular_scopes ?? []) as { scope: string; target_ids?: string[] }[];
+  const byScope = new Map<string, Set<string>>();
+  for (const g of granular) {
+    if (g.target_ids?.length) byScope.set(g.scope, new Set(g.target_ids));
+  }
+  const ids = new Set<string>();
+  for (const sc of PAGE_SCOPES) for (const id of byScope.get(sc) ?? []) ids.add(id);
+
+  logStage('granular_scopes', {
+    scopes_with_targets: [...byScope.keys()],
+    page_ids_found: ids.size,
+    page_ids_masked: [...ids].map(maskId),
+  });
+  if (!ids.size) return [];
+
+  const has = (sc: string, id: string) => byScope.get(sc)?.has(id) ?? false;
+  const out: Record<string, unknown>[] = [];
+  for (const id of ids) {
+    try {
+      // access_token هنا هو Page Access Token الذي تُعيده Meta لهذه الصفحة
+      const pg = await graphGet('page_node', `/${id}`, {
+        fields: 'id,name,username,followers_count,fan_count,access_token,' +
+                'instagram_business_account{id,username,name,profile_picture_url}',
+        access_token: userToken,
+      });
+      // tasks غير موجودة على عقدة الصفحة — نشتقّها من الصلاحيات الممنوحة لها
+      const tasks: string[] = [];
+      if (has('pages_manage_posts', id)) tasks.push('CREATE_CONTENT');
+      if (has('pages_read_engagement', id)) tasks.push('ANALYZE');
+      if (has('pages_manage_engagement', id)) tasks.push('MODERATE');
+      if (has('pages_messaging', id)) tasks.push('MESSAGING');
+      out.push({
+        id: pg.id, name: pg.name, access_token: pg.access_token,
+        tasks, followers: pg.followers_count ?? pg.fan_count ?? 0, username: pg.username ?? null,
+        avatar_url: `${GRAPH}/${pg.id}/picture?type=square&width=160&height=160`,
+        source: 'granular_scopes',
+        instagram: pg.instagram_business_account
+          ? {
+              id: pg.instagram_business_account.id,
+              username: pg.instagram_business_account.username ?? null,
+              name: pg.instagram_business_account.name ?? null,
+              avatar_url: pg.instagram_business_account.profile_picture_url ?? null,
+            }
+          : null,
+      });
+    } catch { /* سُجّل في graphGet — نكمل ببقية الصفحات */ }
+  }
+  return out;
 }
 
 /** اشتراك صفحة في Webhook التطبيق — الخطوة الإلزامية التي لا يغني عنها تفعيل الحقول في لوحة Meta */
@@ -174,6 +259,7 @@ Deno.serve(async (req: Request) => {
 
     // 5) الصفحات (ترقيم كامل) + إنستغرام الأعمال المرتبط بكل صفحة
     const pages: Record<string, unknown>[] = [];
+    let pagedCalls = 0;
     let next: string | null = `${GRAPH}/me/accounts?${new URLSearchParams({
       fields: 'id,name,access_token,tasks,followers_count,username,instagram_business_account{id,username,name,profile_picture_url}',
       limit: '100', access_token: userToken,
@@ -203,7 +289,27 @@ Deno.serve(async (req: Request) => {
         });
       }
       next = data?.paging?.next ?? null;
+      pagedCalls++;
     }
+    const fromMeAccounts = pages.length;
+
+    // 5b) الصفحات الممنوحة لصفحات بعينها (Login for Business) — لا تظهر في
+    //     /me/accounts إطلاقًا. ندمجها مع ما سبق ونمنع التكرار بالمعرّف.
+    const seen = new Set(pages.map((p) => String(p.id)));
+    for (const gp of await pagesFromGranularScopes(userToken)) {
+      if (!seen.has(String(gp.id))) { pages.push(gp); seen.add(String(gp.id)); }
+    }
+
+    logStage('pages_discovery', {
+      me_accounts_pages: fromMeAccounts,
+      me_accounts_pagination_calls: pagedCalls,
+      granular_scope_pages: pages.length - fromMeAccounts,
+      merged_total: pages.length,
+      page_ids_masked: pages.map((p) => maskId(String(p.id))),
+      page_names: pages.map((p) => String(p.name ?? '')),
+      with_page_token: pages.filter((p) => !!p.access_token).length,
+      with_instagram: pages.filter((p) => !!p.instagram).length,
+    });
 
     // 6) الحسابات الإعلانية المتاحة للمستخدم/النشاط — عبر ads_read
     const adAccounts: Record<string, unknown>[] = [];
@@ -260,8 +366,10 @@ Deno.serve(async (req: Request) => {
     const linkErrors: string[] = [];
     const upsertAsset = async (row: Record<string, unknown>, label: string) => {
       if (!row.external_id) return; // بلا معرّف خارجي لا يصح ON CONFLICT
+      // إعادة الربط تُحيي أصلًا كان مفصولًا: بدون هذا يبقى deleted_at قديمًا
+      // فيُحدَّث الصف بنجاح ويظل مخفيًا عن الواجهة.
       const { error } = await admin.from('social_accounts')
-        .upsert(row, { onConflict: 'workspace_id,platform,external_id' });
+        .upsert({ ...row, deleted_at: null }, { onConflict: 'workspace_id,platform,external_id' });
       if (error) { linkErrors.push(`${label}:${error.code}`); console.error('[oauth-callback] asset upsert:', label, error.code, error.message); }
       else linked++;
     };
@@ -298,6 +406,11 @@ Deno.serve(async (req: Request) => {
         last_sync_at: new Date().toISOString(),
       }, 'adaccount');
     }
+
+    logStage('asset_persist', {
+      pages_in: pages.length, ad_accounts_in: adAccounts.length,
+      rows_upserted: linked, db_errors: linkErrors,
+    });
 
     // 10) تنبيه + سجل تدقيق — لا يُفشلان الربط بعد نجاح الحفظ
     //     ملاحظة: بانية PostgREST ليست Promise كاملة (لا تملك .catch) — نستخدم await ونفحص error

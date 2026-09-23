@@ -216,3 +216,26 @@ table.tbl{width:100%;border-collapse:collapse;font-size:13px;min-width:640px}
 .kpi-inline{display:flex;gap:22px;flex-wrap:wrap}
 .kpi-inline .kpi .kv{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
 .kpi-inline .kpi .kl{font-size:11.5px;color:var(--muted)}
+
+
+/* ---------- نافذة الجرس المنبثقة ---------- */
+.notif-dd{position:relative}
+.notif-menu{width:min(380px,calc(100vw - 32px));padding:0;overflow:hidden}
+.notif-menu .nm-head{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.notif-menu .nm-title{font-weight:700;font-size:13.5px}
+.notif-menu .nm-unread{background:var(--red);color:#fff;border-radius:20px;font-size:10px;font-weight:700;padding:1px 7px;min-width:18px;text-align:center}
+.notif-menu .nm-list{max-height:min(60vh,420px);overflow:auto}
+.notif-menu .nm-item{display:flex;align-items:flex-start;gap:10px;width:100%;padding:11px 14px;background:none;border:0;
+  border-bottom:1px solid var(--line);cursor:pointer;text-align:start;font:inherit;color:inherit;transition:background var(--t-fast)}
+.notif-menu .nm-item:hover{background:var(--panel-2)}
+.notif-menu .nm-item.is-read{opacity:.55}
+.notif-menu .nm-item:last-child{border-bottom:0}
+.notif-menu .nm-body{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.notif-menu .nm-t{font-weight:650;font-size:12.5px;line-height:1.5}
+.notif-menu .nm-b{font-size:11.5px;color:var(--muted);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.notif-menu .nm-time{font-size:10.5px;color:var(--muted-2)}
+.notif-menu .nm-empty{padding:30px 18px;text-align:center;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:7px}
+.notif-menu .nm-empty svg{color:var(--muted-2)}
+.notif-menu .nm-foot{display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;
+  border-top:1px solid var(--line);font-size:12.5px;font-weight:650;color:var(--brand);background:var(--panel-2)}
+.notif-menu .nm-foot:hover{background:var(--panel-3,var(--panel-2))}

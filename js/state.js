@@ -79,6 +79,15 @@ const ACC_TYPES = {
 };
 const accTypeName = (t) => ACC_TYPES[t] || t || '—';
 
+/* أيقونة ولون كل نوع إشعار — مصدر واحد للجرس ولصفحة الإشعارات */
+const NOTIF_ICONS = {
+  campaign_started: ['rocket', 'sc-brand'], campaign_completed: ['check-circle', 'sc-green'],
+  job_failed: ['alert', 'sc-red'], account_connected: ['link', 'sc-green'],
+  account_disconnected: ['unlink', 'sc-red'], token_expiring: ['key', 'sc-amber'],
+  post_scheduled: ['calendar', 'sc-purple'], report_ready: ['chart', 'sc-brand']
+};
+const notifIcon = (t) => NOTIF_ICONS[t] || ['bell', 'sc-brand'];
+
 /* حقول الفرز المدعومة في صفحة الحسابات */
 const ACC_SORTS = {
   name:         { t: 'اسم الحساب',   get: (a) => String(a.name || '') },
