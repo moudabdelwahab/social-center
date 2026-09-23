@@ -83,7 +83,7 @@ Deno.serve(async (req: Request) => {
   if (stErr) { console.error('[oauth-start] state insert failed:', stErr.code); return json(req, { error: 'internal' }, 500); }
 
   // 4) رابط تفويض Meta
-  const url = new URL('https://www.facebook.com/v21.0/dialog/oauth');
+  const url = new URL('https://www.facebook.com/v26.0/dialog/oauth');
   url.searchParams.set('client_id', META_APP_ID);
   url.searchParams.set('redirect_uri', REDIRECT_URI);
   url.searchParams.set('state', state);

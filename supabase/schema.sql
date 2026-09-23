@@ -140,6 +140,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   workspace_id uuid, user_id uuid, action text NOT NULL,
   entity_type text, entity_id text, result text DEFAULT 'success',
+  metadata jsonb,
   created_at timestamptz DEFAULT now()
 );
 
